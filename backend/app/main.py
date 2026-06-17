@@ -368,6 +368,7 @@ from app.memory.chat_router import router as chat_router
 from app.documents.router import router as documents_router
 from app.solver.router import router as solver_router
 from app.validation.routes.validation_routes import router as validation_router
+from documentation.routes.api import router as documentation_router
 
 app.include_router(calc_router, prefix=settings.API_V1_PREFIX)
 app.include_router(projects_router, prefix=settings.API_V1_PREFIX)
@@ -376,6 +377,8 @@ app.include_router(chat_router, prefix=settings.API_V1_PREFIX)
 app.include_router(documents_router, prefix=settings.API_V1_PREFIX)
 app.include_router(solver_router, prefix=settings.API_V1_PREFIX)
 app.include_router(validation_router, prefix=settings.API_V1_PREFIX)
+app.include_router(documentation_router, prefix=settings.API_V1_PREFIX)
+
 
 
 # ── Health Check ─────────────────────────────────────────────────

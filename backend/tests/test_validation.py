@@ -4,7 +4,6 @@ from typing import List
 
 from app.solver.models import SolverState, RequirementData, AssumptionData, VariableData
 from app.validation.service import ValidationService
-from app.validation.models import ValidationIssue, ValidationReport
 from app.validation.validators.base import AsyncBaseValidator
 from app.validation.validators.missing_requirements import MissingRequirementsValidator
 from app.validation.validators.assumptions_check import DangerousAssumptionsValidator
@@ -25,7 +24,7 @@ def base_solver_state():
             endurance="30 mins",
             environment="Outdoor",
             safety_factor="1.5",
-            unknown_requirements=[]
+            missing_requirements=[]
         ),
         assumptions=[],
         variables=VariableData(
@@ -39,14 +38,16 @@ def base_solver_state():
 @pytest.mark.asyncio
 async def test_validation_service_success(base_solver_state):
     """Test that a healthy SolverState passes validation with no issues."""
-    service = ValidationService()
-    report = await service.validate(base_solver_state)
+    service = ValidationService(validators=[
+        MissingRequirementsValidator(),
+        DangerousAssumptionsValidator(),
+        SafetyMarginValidator(),
+        UnrealisticValuesValidator()
+    ])
+    issues = await service.validate(base_solver_state)
     
-    assert isinstance(report, ValidationReport)
-    assert report.is_approved is True
-    assert report.total_errors == 0
-    assert report.total_warnings == 0
-    assert len(report.issues) == 0
+    assert isinstance(issues, list)
+    assert len(issues) == 0
 
 
 @pytest.mark.asyncio
@@ -54,7 +55,7 @@ async def test_missing_requirements_validator(base_solver_state):
     """Test that missing requirements are correctly flagged."""
     # 1. Unknown requirements should raise an error
     state = base_solver_state.model_copy(deep=True)
-    state.requirements.unknown_requirements = ["battery_capacity"]
+    state.requirements.missing_requirements = ["battery_capacity"]
     
     validator = MissingRequirementsValidator()
     issues = await validator.validate(state)
@@ -80,7 +81,7 @@ async def test_dangerous_assumptions_validator(base_solver_state):
         AssumptionData(
             missing_information="Wind speed",
             assumption="We assume calm weather conditions during flight",
-            justification="Simplifying assumption"
+            reasoning="Simplifying assumption"
         )
     ]
     
@@ -142,12 +143,15 @@ async def test_validation_service_extensibility(base_solver_state):
     """Test that custom validators can be passed or registered."""
     class CustomValidator(AsyncBaseValidator):
         name = "CustomValidator"
-        async def validate(self, state: SolverState) -> List[ValidationIssue]:
-            return [ValidationIssue(
+        async def validate(self, state: SolverState):
+            from app.validation.schemas.validation_schemas import ValidationIssueSchema
+            return [ValidationIssueSchema(
                 severity="warning",
                 category="Custom",
                 message="Custom warning",
-                validator_name=self.name
+                validator_name=self.name,
+                engineering_reasoning="Custom check failed",
+                recommendation="Fix custom issue"
             )]
             
     # Test passing custom validators to __init__
@@ -155,19 +159,19 @@ async def test_validation_service_extensibility(base_solver_state):
     assert len(custom_service.validators) == 1
     assert isinstance(custom_service.validators[0], CustomValidator)
     
-    report = await custom_service.validate(base_solver_state)
-    assert report.total_warnings == 1
-    assert report.issues[0].category == "Custom"
+    issues = await custom_service.validate(base_solver_state)
+    assert len(issues) == 1
+    assert issues[0].category == "Custom"
     
     # Test registering a validator dynamically
-    service = ValidationService()  # starts with defaults
+    service = ValidationService(validators=[])  # start with empty
     initial_count = len(service.validators)
     service.register_validator(CustomValidator())
     assert len(service.validators) == initial_count + 1
     
-    report2 = await service.validate(base_solver_state)
-    assert report2.total_warnings == 1
-    assert report2.issues[-1].category == "Custom"
+    issues2 = await service.validate(base_solver_state)
+    assert len(issues2) == 1
+    assert issues2[-1].category == "Custom"
 
 
 @pytest.mark.asyncio
@@ -175,16 +179,14 @@ async def test_validation_service_error_handling(base_solver_state):
     """Test that exceptions in individual validators are safely aggregated."""
     class CrashingValidator(AsyncBaseValidator):
         name = "CrashingValidator"
-        async def validate(self, state: SolverState) -> List[ValidationIssue]:
+        async def validate(self, state: SolverState):
             raise RuntimeError("Database error or simulation crash")
             
     service = ValidationService(validators=[CrashingValidator()])
-    report = await service.validate(base_solver_state)
+    issues = await service.validate(base_solver_state)
     
-    assert report.is_approved is False
-    assert report.total_errors == 1
-    assert len(report.issues) == 1
-    assert report.issues[0].severity == "error"
-    assert report.issues[0].category == "System"
-    assert "CrashingValidator" in report.issues[0].validator_name
-    assert "Database error or simulation crash" in report.issues[0].message
+    assert len(issues) == 1
+    assert issues[0].severity == "error"
+    assert issues[0].category == "System"
+    assert "CrashingValidator" in issues[0].validator_name
+    assert "Database error or simulation crash" in issues[0].message

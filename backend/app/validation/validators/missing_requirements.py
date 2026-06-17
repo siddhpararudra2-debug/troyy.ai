@@ -14,9 +14,9 @@ class MissingRequirementsValidator(AsyncBaseValidator):
         issues = []
         reqs = state.requirements
         
-        # Check if the extracted unknown requirements list has items
-        if reqs.unknown_requirements:
-            for missing in reqs.unknown_requirements:
+        # Check if the extracted missing requirements list has items
+        if reqs.missing_requirements:
+            for missing in reqs.missing_requirements:
                 issues.append(ValidationIssue(
                     severity="error",
                     category="Requirements",
