@@ -1,0 +1,3 @@
+"""
+Embedded Module Schemas
+"""

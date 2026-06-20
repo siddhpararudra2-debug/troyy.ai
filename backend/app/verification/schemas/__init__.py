@@ -1,0 +1,3 @@
+"""
+Verification Platform Schemas
+"""

@@ -342,6 +342,33 @@ class ValidationRepository:
             "created_at": row[5],
         }
 
+    async def get_audit_report_by_run_and_format(
+        self, run_id: str, fmt: str
+    ) -> Optional[Dict[str, Any]]:
+        """Fetch audit report contents by run ID and format."""
+        result = await self.db.execute(
+            text("""
+                SELECT id, run_id, report_type, format, content, created_at
+                FROM audit_reports
+                WHERE run_id = :rid AND format = :fmt
+                ORDER BY created_at DESC
+                LIMIT 1
+            """),
+            {"rid": run_id, "fmt": fmt},
+        )
+        row = result.fetchone()
+        if not row:
+            return None
+
+        return {
+            "id": row[0],
+            "run_id": row[1],
+            "report_type": row[2],
+            "format": row[3],
+            "content": row[4],
+            "created_at": row[5],
+        }
+
     async def get_latest_approval(self, project_id: str) -> Optional[Dict[str, Any]]:
         """Fetch the latest approval decision for a project's runs."""
         result = await self.db.execute(

@@ -50,7 +50,10 @@ def _build_solver_state(state_dict: Dict[str, Any]) -> SolverState:
             domain=state_dict.get("domain", "multi"),
         )
         # map lists of models
-        from app.solver.models.domain_models import RequirementData, VariableData, RecommendationData, AssumptionData, ConstraintData
+        from app.solver.models.domain_models import (
+            RequirementData, VariableData, RecommendationData,
+            AssumptionData, ConstraintData, FormulaSelectionData
+        )
         
         state.requirements = RequirementData(**req_dict) if isinstance(req_dict, dict) else RequirementData()
         state.variables = VariableData(**vars_dict) if isinstance(vars_dict, dict) else VariableData()
@@ -60,6 +63,8 @@ def _build_solver_state(state_dict: Dict[str, Any]) -> SolverState:
             state.assumptions.append(AssumptionData(**a))
         for c in state_dict.get("constraints", []):
             state.constraints.append(ConstraintData(**c))
+        for f in state_dict.get("selected_formulas", []):
+            state.selected_formulas.append(FormulaSelectionData(**f))
         
         state.calculation_results = state_dict.get("calculation_results", {})
         return state
@@ -415,7 +420,29 @@ async def get_audit_report(
     }
     approval_res = await approval_service.evaluate_approval(report_mock, risk_res, review_res)
 
-    # Generate content
+    # Check if a report for this format already exists in the database
+    existing_report = await val_repo.get_audit_report_by_run_and_format(id, fmt)
+    if existing_report:
+        if fmt == "pdf":
+            # PDF is saved as "[PDF Binary Content]" placeholder.
+            # We must regenerate the bytes but we do NOT save to database again.
+            content_payload = AuditReportGenerator.generate_report(
+                report=run_state,
+                review=review_res,
+                risks=risk_res,
+                approval=approval_res,
+                fmt=fmt,
+            )
+            return Response(content=content_payload, media_type="application/pdf")
+        else:
+            media_types = {
+                "html": "text/html",
+                "json": "application/json",
+                "markdown": "text/markdown",
+            }
+            return Response(content=existing_report["content"], media_type=media_types.get(fmt, "text/plain"))
+
+    # Generate content (fresh run)
     content_payload = AuditReportGenerator.generate_report(
         report=run_state,
         review=review_res,

@@ -10,6 +10,7 @@ import pytest_asyncio
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.database import async_session_factory, engine
 from app.main import _register_all_formulas, SCHEMA_SQL
 
@@ -20,6 +21,9 @@ _register_all_formulas()
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def init_test_db():
     """Ensure all database tables exist before running any tests."""
+    from pathlib import Path
+    Path("data").mkdir(parents=True, exist_ok=True)
+    settings.ensure_dirs()
     async with engine.begin() as conn:
         for statement in SCHEMA_SQL.strip().split(";"):
             stmt = statement.strip()

@@ -216,9 +216,33 @@ class SolverRepository:
                 },
             )
 
+        # ── Selected Formulas ────────────────────────────────────
+        for idx, f in enumerate(state.selected_formulas):
+            await self.db.execute(
+                text("""
+                    INSERT INTO solver_selected_formulas
+                        (id, run_id, formula_id, name, relevance_score, reasoning,
+                         required_inputs, expected_outputs, dependencies)
+                    VALUES
+                        (:id, :rid, :fid, :name, :score, :reason, :req_inputs, :exp_outputs, :deps)
+                """),
+                {
+                    "id": f"selfor_{run_id}_{idx}",
+                    "rid": run_id,
+                    "fid": f.formula_id,
+                    "name": f.name,
+                    "score": f.relevance_score,
+                    "reason": f.reasoning,
+                    "req_inputs": json.dumps(f.required_inputs),
+                    "exp_outputs": json.dumps(f.expected_outputs),
+                    "deps": json.dumps(f.dependencies),
+                },
+            )
+
         await self.db.commit()
         logger.info(f"Persisted solver run {run_id}")
         return run_id
+
 
     # ── Helpers ───────────────────────────────────────────────────
     async def _insert_variable(
@@ -424,6 +448,24 @@ class SolverRepository:
                 "potential_risks": r[3],
             })
 
+
+        # 8. Load Selected Formulas
+        formula_res = await self.db.execute(
+            text("SELECT formula_id, name, relevance_score, reasoning, required_inputs, expected_outputs, dependencies FROM solver_selected_formulas WHERE run_id = :rid"),
+            {"rid": run_id},
+        )
+        selected_formulas = []
+        for r in formula_res.fetchall():
+            selected_formulas.append({
+                "formula_id": r[0],
+                "name": r[1],
+                "relevance_score": r[2],
+                "reasoning": r[3],
+                "required_inputs": json.loads(r[4]) if r[4] else [],
+                "expected_outputs": json.loads(r[5]) if r[5] else [],
+                "dependencies": json.loads(r[6]) if r[6] else [],
+            })
+
         errors = [error_msg] if error_msg else []
 
         return {
@@ -437,6 +479,7 @@ class SolverRepository:
             "assumptions": assumptions,
             "constraints": constraints,
             "variables": variables,
+            "selected_formulas": selected_formulas,
             "recommendations": {
                 "recommendations": recs,
                 "reasoning": "Restored from database run record",

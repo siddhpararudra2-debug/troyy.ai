@@ -1,0 +1,3 @@
+"""
+Compliance Platform Routes
+"""
