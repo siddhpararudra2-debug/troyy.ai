@@ -1,0 +1,23 @@
+from enum import Enum
+
+class SupplierCategory(str, Enum):
+    ELECTRONICS = "ELECTRONICS"
+    PCB_MANUFACTURER = "PCB_MANUFACTURER"
+    MACHINING = "MACHINING"
+    THREE_D_PRINTING = "THREE_D_PRINTING"
+    COMPOSITES = "COMPOSITES"
+    AEROSPACE = "AEROSPACE"
+    RAW_MATERIALS = "RAW_MATERIALS"
+
+class RiskLevel(str, Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
+
+class ProcurementStatus(str, Enum):
+    QUOTED = "QUOTED"
+    ORDERED = "ORDERED"
+    SHIPPED = "SHIPPED"
+    RECEIVED = "RECEIVED"
+    INSPECTED = "INSPECTED"

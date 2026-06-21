@@ -1628,6 +1628,22 @@ from app.manufacturing.routes.manufacturing_routes import router as manufacturin
 from app.knowledge.routes.knowledge_routes import router as knowledge_router
 from app.compliance.routes.compliance_routes import router as compliance_router
 from app.verification.routes.verification_routes import router as verification_router
+from app.cad_execution.routes.cad_execution_routes import router as cad_execution_router
+from app.design_synthesis.routes.design_synthesis_routes import router as design_synthesis_router
+from app.pcb_execution.routes.pcb_execution_routes import router as pcb_execution_router
+from app.electronics_execution.routes.electronics_execution_routes import router as electronics_execution_router
+from app.engineering_os.routes.engineering_os_routes import router as engineering_os_router
+from app.engineering_os_v2.routes.engineering_os_v2_routes import router as engineering_os_v2_router
+from app.marketplace.routes.marketplace_routes import router as marketplace_router
+from app.engineering_cloud.routes.engineering_cloud_routes import router as engineering_cloud_router
+from app.business_operations.routes.business_operations_routes import router as business_operations_router
+from app.technology_discovery.routes.technology_discovery_routes import router as technology_discovery_router
+from app.engineering_os_v3.routes.engineering_os_v3_routes import router as engineering_os_v3_router
+from app.mbse.routes.mbse_routes import router as mbse_router
+from app.safety_engineering.routes.safety_engineering_routes import router as safety_engineering_router
+from app.hardware_integration.routes.hardware_integration_routes import router as hardware_integration_router
+from app.factory_platform.routes.factory_platform_routes import router as factory_platform_router
+from app.autonomy.routes.autonomy_routes import router as autonomy_router
 
 app.include_router(calc_router, prefix=settings.API_V1_PREFIX)
 app.include_router(projects_router, prefix=settings.API_V1_PREFIX)
@@ -1649,6 +1665,22 @@ app.include_router(manufacturing_router, prefix=settings.API_V1_PREFIX)
 app.include_router(knowledge_router, prefix=settings.API_V1_PREFIX)
 app.include_router(compliance_router, prefix=settings.API_V1_PREFIX)
 app.include_router(verification_router, prefix=settings.API_V1_PREFIX)
+app.include_router(cad_execution_router, prefix=settings.API_V1_PREFIX)
+app.include_router(design_synthesis_router, prefix=settings.API_V1_PREFIX)
+app.include_router(pcb_execution_router, prefix=settings.API_V1_PREFIX)
+app.include_router(electronics_execution_router, prefix=settings.API_V1_PREFIX)
+app.include_router(engineering_os_router, prefix=settings.API_V1_PREFIX)        
+app.include_router(engineering_os_v2_router, prefix=settings.API_V1_PREFIX)
+app.include_router(marketplace_router, prefix=settings.API_V1_PREFIX)
+app.include_router(engineering_cloud_router, prefix=settings.API_V1_PREFIX)
+app.include_router(business_operations_router, prefix=settings.API_V1_PREFIX)
+app.include_router(technology_discovery_router, prefix=settings.API_V1_PREFIX)
+app.include_router(engineering_os_v3_router, prefix=settings.API_V1_PREFIX)
+app.include_router(mbse_router, prefix=settings.API_V1_PREFIX)
+app.include_router(safety_engineering_router, prefix=settings.API_V1_PREFIX)
+app.include_router(hardware_integration_router, prefix=settings.API_V1_PREFIX)
+app.include_router(factory_platform_router, prefix=settings.API_V1_PREFIX)
+app.include_router(autonomy_router, prefix=settings.API_V1_PREFIX)
 
 
 
