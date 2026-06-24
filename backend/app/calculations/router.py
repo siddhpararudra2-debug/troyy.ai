@@ -16,11 +16,51 @@ from app.calculations.schemas import (
     UnitConversionRequest,
     UnitConversionResponse,
     UnitSystemResponse,
+    ValidateRequest,
+    ReasonRequest,
+    DimensionalCheckRequest,
+    PhysicsSolveRequest,
+    MathSolveRequest,
+    ValidationResponse,
+    ReasoningResponse,
+    DimensionalCheckResponse,
+    PhysicsSolveResponse,
+    ValidationIssueResponse,
 )
 from app.calculations.units import convert_unit, get_unit_systems
+from app.units.dimensional_checker import DimensionalChecker
+from app.validation.services.formula_validator import FormulaValidator
+from app.validation.services.engineering_review import EngineeringReview, DesignOption
+from app.physics_engine.mechanics import MechanicsEngine
+from app.physics_engine.fluids import FluidEngine
+from app.physics_engine.thermodynamics import ThermodynamicsEngine
+from app.physics_engine.electromagnetics import ElectromagneticsEngine
+from app.math_engine.symbolic_solver import SymbolicSolver
+from app.math_engine.numerical_solver import NumericalSolver
+from app.math_engine.matrix_engine import MatrixEngine
+from app.math_engine.calculus_engine import CalculusEngine
 from app.core.dependencies import DbSession
 
-router = APIRouter(tags=["calculations"])
+router = APIRouter(tags=["calculations", "sprint2"])
+
+# Initialize engines
+formula_validator = FormulaValidator()
+dimensional_checker = DimensionalChecker()
+engineering_review = EngineeringReview()
+
+physics_engines = {
+    "mechanics": MechanicsEngine(),
+    "fluids": FluidEngine(),
+    "thermodynamics": ThermodynamicsEngine(),
+    "electromagnetics": ElectromagneticsEngine(),
+}
+
+math_engines = {
+    "symbolic": SymbolicSolver(),
+    "numerical": NumericalSolver(),
+    "matrix": MatrixEngine(),
+    "calculus": CalculusEngine(),
+}
 
 
 # ── Calculations ─────────────────────────────────────────────────
@@ -94,3 +134,83 @@ async def convert_units(request: UnitConversionRequest):
 async def list_unit_systems():
     """List available unit systems (SI, Imperial) and their unit mappings."""
     return UnitSystemResponse(systems=get_unit_systems())
+
+
+# ── Validation ───────────────────────────────────────────────────
+@router.post("/validate", response_model=ValidationResponse)
+async def validate_calculation(request: ValidateRequest):
+    """Validate an engineering calculation"""
+    val_result = formula_validator.validate_calculation(
+        request.formula_id, request.parameters
+    )
+    return ValidationResponse(
+        valid=val_result.valid,
+        issues=[
+            ValidationIssueResponse(
+                severity=i.severity, message=i.message, field=i.field
+            )
+            for i in val_result.issues
+        ],
+        warnings=val_result.warnings,
+    )
+
+
+@router.post("/dimensional-check", response_model=DimensionalCheckResponse)
+async def check_dimensions(request: DimensionalCheckRequest):
+    """Check dimensional consistency"""
+    check = dimensional_checker.check_dimensions(
+        request.left_expr, request.right_expr, request.variables
+    )
+    return DimensionalCheckResponse(
+        valid=check.valid,
+        left_dimension=check.left_dimension,
+        right_dimension=check.right_dimension,
+        message=check.message,
+    )
+
+
+# ── Physics Engine ───────────────────────────────────────────────
+@router.post("/physics/solve", response_model=PhysicsSolveResponse)
+async def solve_physics(request: PhysicsSolveRequest):
+    """Solve physics equations"""
+    engine = physics_engines.get(request.domain)
+    if engine is None:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown physics domain: {request.domain}",
+        )
+    method = getattr(engine, request.formula_name, None)
+    if method is None or not callable(method):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown formula: {request.formula_name}",
+        )
+    result = method(**request.parameters)
+    return PhysicsSolveResponse(
+        result=result,
+        formula=result.get("formula", ""),
+        units={k: v for k, v in result.items() if k == "units"},
+    )
+
+
+# ── Reasoning & Review ───────────────────────────────────────────
+@router.post("/reason", response_model=ReasoningResponse)
+async def reason(request: ReasonRequest):
+    """Perform engineering trade-off analysis"""
+    options = [
+        DesignOption(
+            name=opt["name"],
+            description=opt.get("description", ""),
+            metrics=opt.get("metrics", {}),
+            risks=opt.get("risks", []),
+            assumptions=opt.get("assumptions", []),
+        )
+        for opt in request.options
+    ]
+    recommendation = engineering_review.evaluate_options(options, request.criteria)
+    return ReasoningResponse(
+        recommended=recommendation.recommended.__dict__,
+        alternatives=[alt.__dict__ for alt in recommendation.alternatives],
+        rationale=recommendation.rationale,
+        trade_offs=recommendation.trade_offs,
+    )

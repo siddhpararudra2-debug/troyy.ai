@@ -57,7 +57,7 @@ async def search_knowledge(request: EngineeringSearchRequest):
 
 @router.post("/rag", response_model=RAGResponse)
 async def retrieve_rag_context(request: RAGRequest):
-    return RAGService.retrieve(request)
+    return await RAGService.retrieve(request)
 
 
 @router.post("/failure", response_model=FailureRecordResponse)

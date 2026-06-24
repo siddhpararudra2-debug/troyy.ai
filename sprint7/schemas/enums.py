@@ -1,0 +1,75 @@
+from enum import Enum
+
+class WorkOrderState(str, Enum):
+    CREATED = "CREATED"
+    RELEASED = "RELEASED"
+    IN_PROGRESS = "IN_PROGRESS"
+    ON_HOLD = "ON_HOLD"
+    COMPLETED = "COMPLETED"
+    SCRAPPED = "SCRAPPED"
+
+class MachineState(str, Enum):
+    IDLE = "IDLE"
+    RUNNING = "RUNNING"
+    SETUP = "SETUP"
+    MAINTENANCE = "MAINTENANCE"
+    ERROR = "ERROR"
+    OFFLINE = "OFFLINE"
+
+class HILState(str, Enum):
+    IDLE = "IDLE"
+    CONNECTING = "CONNECTING"
+    CONNECTED = "CONNECTED"
+    RUNNING = "RUNNING"
+    PAUSED = "PAUSED"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+class TestState(str, Enum):
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    PASSED = "PASSED"
+    FAILED = "FAILED"
+    SKIPPED = "SKIPPED"
+    BLOCKED = "BLOCKED"
+
+class QualificationLevel(str, Enum):
+    PROTOTYPE = "PROTOTYPE"
+    ENGINEERING = "ENGINEERING"
+    QUALIFICATION = "QUALIFICATION"
+    FLIGHT = "FLIGHT"
+    PRODUCTION = "PRODUCTION"
+
+class DeploymentState(str, Enum):
+    PLANNED = "PLANNED"
+    MANUFACTURING = "MANUFACTURING"
+    TESTING = "TESTING"
+    COMMISSIONED = "COMMISSIONED"
+    DEPLOYED = "DEPLOYED"
+    OPERATIONAL = "OPERATIONAL"
+    MAINTENANCE = "MAINTENANCE"
+    RETIRED = "RETIRED"
+
+class ProcessType(str, Enum):
+    CNC_MILLING = "CNC_MILLING"
+    CNC_TURNING = "CNC_TURNING"
+    THREE_D_PRINTING = "THREE_D_PRINTING"
+    SHEET_METAL = "SHEET_METAL"
+    COMPOSITE = "COMPOSITE"
+    PCB_ASSEMBLY = "PCB_ASSEMBLY"
+    MANUAL_ASSEMBLY = "MANUAL_ASSEMBLY"
+    INSPECTION = "INSPECTION"
+
+class AutopilotType(str, Enum):
+    PX4 = "PX4"
+    ARDUPILOT = "ARDUPILOT"
+
+class FlightMode(str, Enum):
+    MANUAL = "MANUAL"
+    STABILIZE = "STABILIZE"
+    ALT_HOLD = "ALT_HOLD"
+    LOITER = "LOITER"
+    RTL = "RTL"
+    MISSION = "MISSION"
+    LAND = "LAND"
+    TAKEOFF = "TAKEOFF"

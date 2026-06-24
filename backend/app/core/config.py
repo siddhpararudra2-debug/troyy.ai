@@ -36,6 +36,22 @@ class Settings(BaseSettings):
     DEFAULT_UNIT_SYSTEM: str = "SI"
     DECIMAL_PRECISION: int = 6
 
+    # ── Ollama / Local AI ────────────────────────────────────────
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_MODEL_CODING: str = "qwen2.5-coder:7b"
+    OLLAMA_MODEL_ENGINEERING: str = "deepseek-r1:8b"
+    OLLAMA_MODEL_REASONING: str = "qwen3:8b"
+    OLLAMA_REQUEST_TIMEOUT: int = 300  # 5 minutes
+
+    # ── Qdrant ───────────────────────────────────────────────────
+    QDRANT_HOST: str = "localhost"
+    QDRANT_PORT: int = 6333
+    QDRANT_COLLECTION_NAME: str = "troy-knowledge"
+    QDRANT_VECTOR_SIZE: int = 1024
+
+    # ── Redis / Celery ───────────────────────────────────────────
+    REDIS_URL: str = "redis://localhost:6379/0"
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

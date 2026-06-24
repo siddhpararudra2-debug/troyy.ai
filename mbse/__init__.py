@@ -1,0 +1,1 @@
+"""MBSE Platform - System Modeling and Architecture for Sprint 6."""

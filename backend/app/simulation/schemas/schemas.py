@@ -177,6 +177,67 @@ class OptimizationResponse(BaseModel):
     created_at: datetime
 
 
+# ------------------- FEA Simulation -------------------
+class FEASimulationRequest(BaseSimulationRequest):
+    analysis_type: str = "static"  # static, modal, thermal, fatigue
+    material_properties: Dict[str, Any] = Field(default_factory=dict)
+    loads: List[Dict[str, Any]] = Field(default_factory=list)
+    constraints: List[Dict[str, Any]] = Field(default_factory=list)
+    mesh_id: Optional[str] = None
+
+
+class FEASimulationResponse(BaseModel):
+    id: str
+    project_id: str
+    analysis_type: str
+    material_properties: Dict[str, Any] = Field(default_factory=dict)
+    loads: List[Dict[str, Any]] = Field(default_factory=list)
+    constraints: List[Dict[str, Any]] = Field(default_factory=list)
+    stress_results: Dict[str, Any] = Field(default_factory=dict)
+    strain_results: Dict[str, Any] = Field(default_factory=dict)
+    safety_factors: Dict[str, Any] = Field(default_factory=dict)
+    execution_time_ms: Optional[float] = None
+    created_at: datetime
+
+
+# ------------------- CFD Simulation -------------------
+class CFDSimulationRequest(BaseSimulationRequest):
+    analysis_type: str = "external"  # external, internal, turbulence, thermal
+    fluid_properties: Dict[str, Any] = Field(default_factory=dict)
+    boundary_conditions: List[Dict[str, Any]] = Field(default_factory=list)
+    mesh_id: Optional[str] = None
+
+
+class CFDSimulationResponse(BaseModel):
+    id: str
+    project_id: str
+    analysis_type: str
+    fluid_properties: Dict[str, Any] = Field(default_factory=dict)
+    boundary_conditions: List[Dict[str, Any]] = Field(default_factory=list)
+    pressure_maps: Dict[str, Any] = Field(default_factory=dict)
+    velocity_fields: Dict[str, Any] = Field(default_factory=dict)
+    lift_coefficient: Optional[float] = None
+    drag_coefficient: Optional[float] = None
+    execution_time_ms: Optional[float] = None
+    created_at: datetime
+
+
+# ------------------- Verification & Validation -------------------
+class VerificationRequest(BaseModel):
+    project_id: str
+    requirements: List[Dict[str, Any]] = Field(default_factory=list)
+    compliance_rules: List[Dict[str, Any]] = Field(default_factory=list)
+
+
+class VerificationResponse(BaseModel):
+    id: str
+    project_id: str
+    requirements_verified: List[Dict[str, Any]] = Field(default_factory=list)
+    compliance_checks: List[Dict[str, Any]] = Field(default_factory=list)
+    risk_assessment: Dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime
+
+
 # ------------------- Result Analysis -------------------
 class ResultAnalysisResponse(BaseModel):
     id: str

@@ -1,1 +1,3 @@
-# Troy Backend Application
+"""
+Engineering OS Backend Application.
+"""

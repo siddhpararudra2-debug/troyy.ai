@@ -1,3 +1,0 @@
-"""
-Engineering Cloud Models
-"""

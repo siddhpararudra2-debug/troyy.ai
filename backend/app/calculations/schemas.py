@@ -6,6 +6,7 @@ Pydantic models for calculation requests and responses.
 from __future__ import annotations
 
 from pydantic import BaseModel, Field
+from typing import Any, List, Dict, Optional
 
 
 # ── Request Schemas ──────────────────────────────────────────────
@@ -22,6 +23,38 @@ class UnitConversionRequest(BaseModel):
     value: float = Field(..., description="Numerical value to convert")
     from_unit: str = Field(..., description="Source unit (e.g., 'm/s', 'psi')")
     to_unit: str = Field(..., description="Target unit")
+
+
+class ValidateRequest(BaseModel):
+    """Validation request"""
+    formula_id: str
+    parameters: Dict[str, float]
+
+
+class ReasonRequest(BaseModel):
+    """Reasoning request"""
+    options: List[Dict[str, Any]]
+    criteria: Dict[str, float]
+
+
+class DimensionalCheckRequest(BaseModel):
+    """Dimensional check request"""
+    left_expr: str
+    right_expr: str
+    variables: Optional[Dict[str, str]] = None
+
+
+class PhysicsSolveRequest(BaseModel):
+    """Physics solver request"""
+    domain: str
+    formula_name: str
+    parameters: Dict[str, float]
+
+
+class MathSolveRequest(BaseModel):
+    """Math engine request"""
+    operation: str
+    parameters: Dict[str, Any]
 
 
 # ── Response Schemas ─────────────────────────────────────────────
@@ -101,3 +134,43 @@ class FormulaListResponse(BaseModel):
     formulas: list[FormulaResponse]
     total: int
     domains: list[str]
+
+
+class ValidationIssueResponse(BaseModel):
+    severity: str
+    message: str
+    field: str
+
+
+class ValidationResponse(BaseModel):
+    valid: bool
+    issues: List[ValidationIssueResponse] = []
+    warnings: List[str] = []
+
+
+class DimensionalCheckResponse(BaseModel):
+    valid: bool
+    left_dimension: Optional[str] = None
+    right_dimension: Optional[str] = None
+    message: str
+
+
+class DesignOptionResponse(BaseModel):
+    name: str
+    description: str
+    metrics: Dict[str, float]
+    risks: List[str]
+    assumptions: List[str]
+
+
+class ReasoningResponse(BaseModel):
+    recommended: DesignOptionResponse
+    alternatives: List[DesignOptionResponse]
+    rationale: str
+    trade_offs: List[str]
+
+
+class PhysicsSolveResponse(BaseModel):
+    result: Dict[str, Any]
+    formula: str
+    units: Dict[str, str]

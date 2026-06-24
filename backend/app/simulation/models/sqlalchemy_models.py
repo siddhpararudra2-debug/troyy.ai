@@ -110,6 +110,80 @@ class DroneSimulation(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class FEARun(Base):
+    __tablename__ = "fea_runs"
+    id = Column(Text, primary_key=True)
+    simulation_run_id = Column(Text, ForeignKey("simulation_runs.id"))
+    analysis_type = Column(Text, nullable=False)  # static, modal, thermal, fatigue
+    material_properties_json = Column(Text, nullable=False, default='{}')
+    loads_json = Column(Text, nullable=False, default='[]')
+    constraints_json = Column(Text, nullable=False, default='[]')
+    mesh_id = Column(Text)
+    stress_results_json = Column(Text, nullable=False, default='{}')
+    strain_results_json = Column(Text, nullable=False, default='{}')
+    safety_factors_json = Column(Text, nullable=False, default='{}')
+    execution_time_ms = Column(Float)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class CFDRun(Base):
+    __tablename__ = "cfd_runs"
+    id = Column(Text, primary_key=True)
+    simulation_run_id = Column(Text, ForeignKey("simulation_runs.id"))
+    analysis_type = Column(Text, nullable=False)  # external, internal, turbulence, thermal
+    fluid_properties_json = Column(Text, nullable=False, default='{}')
+    boundary_conditions_json = Column(Text, nullable=False, default='[]')
+    mesh_id = Column(Text)
+    pressure_maps_json = Column(Text, nullable=False, default='{}')
+    velocity_fields_json = Column(Text, nullable=False, default='{}')
+    lift_coefficient = Column(Float)
+    drag_coefficient = Column(Float)
+    execution_time_ms = Column(Float)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class Mesh(Base):
+    __tablename__ = "meshes"
+    id = Column(Text, primary_key=True)
+    name = Column(Text, nullable=False)
+    mesh_type = Column(Text, nullable=False)  # fea, cfd
+    element_count = Column(Float)
+    node_count = Column(Float)
+    quality_metrics_json = Column(Text, nullable=False, default='{}')
+    mesh_file_path = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class BoundaryCondition(Base):
+    __tablename__ = "boundary_conditions"
+    id = Column(Text, primary_key=True)
+    name = Column(Text, nullable=False)
+    condition_type = Column(Text, nullable=False)  # load, constraint, inflow, outflow
+    parameters_json = Column(Text, nullable=False, default='{}')
+    simulation_type = Column(Text, nullable=False)  # fea, cfd
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class ParetoSolution(Base):
+    __tablename__ = "pareto_solutions"
+    id = Column(Text, primary_key=True)
+    optimization_run_id = Column(Text, ForeignKey("simulation_runs.id"))
+    design_json = Column(Text, nullable=False, default='{}')
+    objectives_json = Column(Text, nullable=False, default='{}')
+    tradeoffs_json = Column(Text, nullable=False, default='[]')
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class VerificationReport(Base):
+    __tablename__ = "verification_reports"
+    id = Column(Text, primary_key=True)
+    project_id = Column(Text, nullable=False)
+    requirements_verified_json = Column(Text, nullable=False, default='[]')
+    compliance_checks_json = Column(Text, nullable=False, default='[]')
+    risk_assessment_json = Column(Text, nullable=False, default='{}')
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class OptimizationResult(Base):
     __tablename__ = "optimization_results"
     id = Column(Text, primary_key=True)

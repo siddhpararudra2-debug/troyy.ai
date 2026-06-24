@@ -1,0 +1,1 @@
+"""System Architecture Engine - Subsystem design and dependency analysis."""

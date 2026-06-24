@@ -1,0 +1,1 @@
+"""Risk Management Platform - Risk identification, failure analysis and mitigation planning."""
