@@ -1,0 +1,38 @@
+name: Database Migrations CI
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'supabase/migrations/**'
+
+jobs:
+  verify-migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+          
+      - name: Start local Supabase and verify migrations
+        run: |
+          supabase start
+          supabase db lint
+          
+      # If you want to automatically apply to a staging/production DB on push:
+      # - name: Push to Supabase
+      #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      #   env:
+      #     SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      #     SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      #     PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+      #   run: |
+      #     supabase link --project-ref $PROJECT_ID
+      #     supabase db push

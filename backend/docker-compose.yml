@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: engineering-os-backend:latest
+    container_name: engineering-os-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - production.env
+    depends_on:
+      - redis
+    networks:
+      - eos-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:7-alpine
+    container_name: eos-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis-data:/data
+    networks:
+      - eos-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: eos-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro # For SSL certs if self-hosting on VPS
+    depends_on:
+      - backend
+    networks:
+      - eos-network
+
+networks:
+  eos-network:
+    driver: bridge
+
+volumes:
+  redis-data:
