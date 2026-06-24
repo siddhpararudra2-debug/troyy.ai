@@ -29,15 +29,15 @@ export class APIFetcher {
       ...customConfig 
     } = options;
 
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      ...customConfig.headers,
-    };
+    const headers = new Headers(customConfig.headers || {});
+    if (!headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json');
+    }
 
     if (requireAuth) {
       const token = await this.getAuthToken();
       if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+        headers.set('Authorization', `Bearer ${token}`);
       } else {
         throw new Error('Authentication required but no token found.');
       }
