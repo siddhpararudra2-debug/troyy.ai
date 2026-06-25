@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  basePath: '/troyy.ai',
   output: 'export',
   reactStrictMode: true,
   images: {
