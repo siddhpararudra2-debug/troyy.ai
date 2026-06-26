@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: personal-engineering-os-backend
+    env: docker
+    repo: https://github.com/siddhpararudra2-debug/troyy.ai
+    plan: free
+    branch: main
+    dockerfilePath: ./Dockerfile
